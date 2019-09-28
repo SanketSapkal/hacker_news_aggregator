@@ -31,16 +31,19 @@ defmodule HackerNewsAggregator do
     {:ok, state}
   end
 
-  def get_top_stories(content_type) do
-      GenServer.call(@genserver_name, {:get_top_stories, content_type}, @default_timeout)
+  def get_top_stories(content_type, start_index, story_count) do
+      GenServer.call(@genserver_name,
+                     {:get_top_stories, content_type, start_index, story_count},
+                     @default_timeout)
   end
 
   def get_single_story(story_id) do
       case GenServer.call(@genserver_name, {:get_single_story, story_id}, @default_timeout) do
-          {:ok, story} ->
-              story
-          :error ->
-              {:error, "story not found"}
+          nil ->
+              {:error, "story not found"} |> Tuple.to_list
+
+          story_content ->
+              story_content
       end
   end
 
@@ -48,20 +51,26 @@ defmodule HackerNewsAggregator do
       GenServer.cast(@genserver_name, {:update_state, new_state})
   end
 
-  def handle_call({:get_top_stories, :only_ids}, _from, state) do
-      {:reply, Map.keys(state), state}
+  def handle_call({:get_top_stories, :only_ids, start_index, story_count}, _from, state) do
+      reply = Enum.slice(state, start_index, story_count)
+      {:reply, Keyword.keys(reply), state}
   end
 
-  def handle_call({:get_top_stories, :content}, _from, state) do
-      {:reply, Map.values(state), state}
+  def handle_call({:get_top_stories, :content, start_index, story_count}, _from, state) do
+      reply = Enum.slice(state, start_index, story_count)
+      {:reply, Keyword.values(reply), state}
   end
 
   def handle_call({:get_single_story, story_id}, _from, state) do
-      {:reply, Map.fetch(state, story_id), state}
+      # TODO: Optimize this
+      {_story_id, reply} = Enum.find(state, fn {id, _value} -> id == story_id end)
+      {:reply, reply, state}
   end
 
-  def handle_cast({:update_state, new_state}, _state) do
+  def handle_cast({:update_state, new_state}, old_state) do
       IO.puts("updating state...")
+      new_state = new_state ++ old_state
+                  |> Enum.uniq_by(fn {key, _value} -> key end)
       {:noreply, new_state}
   end
 

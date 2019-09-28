@@ -35,7 +35,6 @@ defmodule HackerNewsAggregator.HTTPClient do
         story_id_list
         |> batch_process([])
         |> Enum.slice(0, 50)
-        |> Enum.into(%{})
     end
 
     def filter_stories({:error, _reason}) do
