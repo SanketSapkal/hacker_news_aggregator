@@ -10,7 +10,9 @@ defmodule HackerNewsAggregator.Application do
     children = [
         Plug.Cowboy.child_spec(scheme: :http,
                                plug: HackerNewsAggregator.Router,
-                               options: [port: 4000])
+                               options: [port: 4000]),
+        {HackerNewsAggregator, []},
+        {HackerNewsAggregator.StateUpdater, []}
     ]
 
     opts = [strategy: :one_for_one, name: HackerNewsAggregator.Supervisor]

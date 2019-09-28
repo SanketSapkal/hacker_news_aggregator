@@ -4,7 +4,7 @@ defmodule HackerNewsAggregator.HTTPClient do
     @story_count Application.get_env(@app, :story_count)
     @threads_per_batch Application.get_env(@app, :threads_per_batch)
 
-    def get_top_stories() do
+    def pull_top_stories() do
         Application.get_env(@app, :top_stories_url)
         |> http_request()
         |> filter_stories()
@@ -14,11 +14,15 @@ defmodule HackerNewsAggregator.HTTPClient do
         case HTTPoison.get(url) do
             {:ok, %HTTPoison.Response{body: response, status_code: 200}} ->
                 {:ok, Poison.decode!(response)}
+
             {:ok, %HTTPoison.Response{status_code: other_status_code}} ->
                 message = "Failed with status code: #{other_status_code}"
                 IO.puts(message)
                 {:error, message}
+
             {:error, reason} ->
+                message = "Failed with reason: #{reason}"
+                IO.puts(message)
                 {:error, reason}
         end
     end
@@ -48,7 +52,7 @@ defmodule HackerNewsAggregator.HTTPClient do
 
         results =
             current_batch
-            |> Enum.map(&Task.async(fn -> get_story_content(&1) end))
+            |> Enum.map(&Task.async(fn -> pull_story_content(&1) end))
             |> Enum.map(fn task -> Task.await(task) end)
             |> List.flatten()
 
@@ -59,7 +63,7 @@ defmodule HackerNewsAggregator.HTTPClient do
         acc
     end
 
-    def get_story_content(story_id) do
+    def pull_story_content(story_id) do
         Application.get_env(@app, :individual_story_url)
         |> String.replace("REPLACE_WITH_STORY_ID", to_string(story_id))
         |> http_request()
