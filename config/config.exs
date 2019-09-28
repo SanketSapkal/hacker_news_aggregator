@@ -8,7 +8,7 @@ config :hacker_news_aggregator,
 
     # These threads correspond to size of a single batch while getting the story
     # content of story id in the batch
-    threads_per_batch: 20,
+    batch_size: 20,
 
     # Top story count, these many top stories are pulled from hacker news. These
     # many stories are sent to the websocket.

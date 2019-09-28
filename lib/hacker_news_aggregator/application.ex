@@ -1,18 +1,19 @@
 defmodule HackerNewsAggregator.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
 
   def start(_type, _args) do
-    # List all child processes to be supervised
     children = [
+        # TODO: Make the port configurable
+        # TODO: Make the scheme configurable.
         Plug.Cowboy.child_spec(scheme: :http,
                                plug: HackerNewsAggregator.Router,
                                options: [dispatch: dispatch(), port: 4000]),
         {HackerNewsAggregator, []},
         {HackerNewsAggregator.StateUpdater, []},
+        # :duplicate is used to register all the websockets under the same key,
+        # it is easier to get all the websocket pids this way.
         Registry.child_spec( keys: :duplicate, name: Registry.HackerNewsAggregator)
     ]
 
@@ -21,7 +22,10 @@ defmodule HackerNewsAggregator.Application do
   end
 
   defp dispatch do
-      [{:_, [{"/ws/[...]", HackerNewsAggregator.WebSocketHandler, []},
-             {:_, Plug.Cowboy.Handler, {HackerNewsAggregator.Router, []}}]}]
+      [{:_,
+        # Add websocket handler for /ws/.... endpoint.
+        [{"/ws/[...]", HackerNewsAggregator.WebSocketHandler, []},
+        # Use router for all other endpoints.
+         {:_, Plug.Cowboy.Handler, {HackerNewsAggregator.Router, []}}]}]
   end
 end
