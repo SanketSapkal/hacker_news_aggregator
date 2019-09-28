@@ -6,8 +6,11 @@ defmodule HackerNewsAggregator do
   use GenServer
 
   alias HackerNewsAggregator.HTTPClient
+
   @default_timeout :timer.minutes(5)
   @genserver_name :hacker_news_aggregator
+  @websocket_registry_key :websocket
+  @story_count Application.get_env(:hacker_news_aggregator, :story_count)
 
   @doc """
   Hello world.
@@ -19,16 +22,16 @@ defmodule HackerNewsAggregator do
 
   """
   def hello do
-    "world"
+      "world"
   end
 
   def start_link(_) do
-    GenServer.start_link(__MODULE__, %{}, name: @genserver_name)
+      GenServer.start_link(__MODULE__, [], name: @genserver_name)
   end
 
   def init(_) do
-    state = initial_state()
-    {:ok, state}
+      state = initial_state()
+      {:ok, state}
   end
 
   def get_top_stories(content_type, start_index, story_count) do
@@ -71,10 +74,31 @@ defmodule HackerNewsAggregator do
       IO.puts("updating state...")
       new_state = new_state ++ old_state
                   |> Enum.uniq_by(fn {key, _value} -> key end)
+
+      new_state
+      |> Keyword.values()
+      |> Enum.slice(0, @story_count)
+      |> broadcast_state_on_websockets()
+
       {:noreply, new_state}
   end
 
   defp initial_state() do
       HTTPClient.pull_top_stories()
   end
+
+  defp broadcast_state_on_websockets(message) do
+      case Registry.lookup(Registry.HackerNewsAggregator, @websocket_registry_key) do
+          [] ->
+              :ok
+          _ ->
+              Registry.HackerNewsAggregator
+              |> Registry.dispatch(@websocket_registry_key, fn(entries) ->
+                  for {pid, _} <- entries do
+                      Process.send(pid, message, [])
+                  end
+              end)
+      end
+  end
+
 end

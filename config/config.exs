@@ -1,36 +1,19 @@
-# This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
-
-# This configuration is loaded before any dependency and is restricted
-# to this project. If another project depends on this project, this
-# file won't be loaded nor affect the parent project. For this reason,
-# if you want to provide default values for your application for
-# third-party users, it should be done in your "mix.exs" file.
-
-# You can configure your application as:
-#
-#     config :hacker_news_aggregator, key: :value
-#
-# and access this configuration in your application as:
-#
-#     Application.get_env(:hacker_news_aggregator, :key)
-#
-# You can also configure a third-party app:
-#
-#     config :logger, level: :info
-#
-
-# It is also possible to import configuration files, relative to this
-# directory. For example, you can emulate configuration per environment
-# by uncommenting the line below and defining dev.exs, test.exs and such.
-# Configuration from the imported file will override the ones defined
-# here (which is why it is important to import them last).
-#
-#     import_config "#{Mix.env()}.exs"
 config :hacker_news_aggregator,
+    # URL for getting top 500 stories from hacker news
     top_stories_url: "https://hacker-news.firebaseio.com/v0/topstories.json",
+
+    # URL for getting individual story content from hacker-news
     individual_story_url: "https://hacker-news.firebaseio.com/v0/item/REPLACE_WITH_STORY_ID.json",
+
+    # These threads correspond to size of a single batch while getting the story
+    # content of story id in the batch
     threads_per_batch: 20,
+
+    # Top story count, these many top stories are pulled from hacker news. These
+    # many stories are sent to the websocket.
     story_count: 50,
+
+    # Time interval after which top stories from hacker news are pulled and sent
+    # to websocket
     update_timeout: 5

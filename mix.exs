@@ -11,7 +11,6 @@ defmodule HackerNewsAggregator.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -19,10 +18,8 @@ defmodule HackerNewsAggregator.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-        {:poolboy, ">0.0.0"},
         {:plug_cowboy, "~> 2.0"},
         {:httpoison, "~> 1.0"},
         {:poison, "~> 3.1"}

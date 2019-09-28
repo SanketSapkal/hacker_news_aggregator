@@ -10,12 +10,18 @@ defmodule HackerNewsAggregator.Application do
     children = [
         Plug.Cowboy.child_spec(scheme: :http,
                                plug: HackerNewsAggregator.Router,
-                               options: [port: 4000]),
+                               options: [dispatch: dispatch(), port: 4000]),
         {HackerNewsAggregator, []},
-        {HackerNewsAggregator.StateUpdater, []}
+        {HackerNewsAggregator.StateUpdater, []},
+        Registry.child_spec( keys: :duplicate, name: Registry.HackerNewsAggregator)
     ]
 
     opts = [strategy: :one_for_one, name: HackerNewsAggregator.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp dispatch do
+      [{:_, [{"/ws/[...]", HackerNewsAggregator.WebSocketHandler, []},
+             {:_, Plug.Cowboy.Handler, {HackerNewsAggregator.Router, []}}]}]
   end
 end
