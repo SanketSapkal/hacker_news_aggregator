@@ -28,3 +28,6 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env()}.exs"
+config :hacker_news_aggregator,
+    top_stories_url: "https://hacker-news.firebaseio.com/v0/topstories.json",
+    individual_story_url: "https://hacker-news.firebaseio.com/v0/item/REPLACE_WITH_STORY_ID.json"
