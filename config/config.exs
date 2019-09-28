@@ -30,4 +30,6 @@ use Mix.Config
 #     import_config "#{Mix.env()}.exs"
 config :hacker_news_aggregator,
     top_stories_url: "https://hacker-news.firebaseio.com/v0/topstories.json",
-    individual_story_url: "https://hacker-news.firebaseio.com/v0/item/REPLACE_WITH_STORY_ID.json"
+    individual_story_url: "https://hacker-news.firebaseio.com/v0/item/REPLACE_WITH_STORY_ID.json",
+    threads_per_batch: 20,
+    story_count: 50
